@@ -9,6 +9,7 @@ export class CanvasComponent implements OnInit {
 
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
+  offset = 0; // for marching ants
   constructor() { }
 
   ngOnInit() {
@@ -27,7 +28,17 @@ export class CanvasComponent implements OnInit {
     // this.drawPacMan();
     // this.path2D();
     // this.drawLineWidth();
-    this.drawLineCap();
+    // this.drawLineCap();
+    // this.drawLineJoin();
+    // this.march();
+    // this.gradients();
+    // this.pattern();
+    // this.shadows();
+    // this.canvasFillRules();
+    // this.drawText();
+    // this.lineGraph();
+    // this.barGraph();
+    this.pixels();
   }
 
   // Gets the canvas and the CanvasRenderingContext2D (the context)
@@ -395,7 +406,243 @@ export class CanvasComponent implements OnInit {
       this.context.lineTo(25 + i * 50, 140);
       this.context.stroke();
     }
+  }
+
+  // Demonstrates the three types of lineJoins:
+  // round, bevel, miter
+  drawLineJoin(): void {
+    const lineJoin = ['round', 'bevel', 'miter'];
+    this.context.lineWidth = 10;
+
+    for (let i = 0; i < lineJoin.length; i++) {
+      this.context.lineJoin = lineJoin[i];
+      this.context.beginPath();
+      this.context.moveTo(-5, 5 + i * 40);
+      this.context.lineTo(35, 45 + i * 40);
+      this.context.lineTo(75, 5 + i * 40);
+      this.context.lineTo(115, 45 + i * 40);
+      this.context.lineTo(155, 5 + i * 40);
+      this.context.stroke();
+    }
+  }
+
+  // Creates the 'ants' for marching ants.
+  // Demonstrates setLineDash() and lineDashOffset
+  ants(): void {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.setLineDash([8, 11]);
+    this.context.lineDashOffset = -this.offset;
+    this.context.strokeRect(10, 10, 100, 100);
+  }
+
+  // The animation for marching ants.
+  march(): void {
+    this.offset++;
+    if (this.offset > 16) {
+      this.offset = 0;
+    }
+    this.ants();
+    setTimeout(() => {
+      this.march();
+    }, 20);
+  }
+
+  // Demonstrates how to create gradients using a CanvasGradient object
+  // and the fillStyle property
+  gradients(): void {
+    // Creates CanvadGradient object
+    let linearGradient = this.context.createLinearGradient(0, 0, 150, 150);
+
+    // assign gradient colors with addColorStop()
+    // you can add more stops to change the gradient
+    // Background
+    linearGradient.addColorStop(0, 'pink');
+    linearGradient.addColorStop(.4, 'purple');
+    linearGradient.addColorStop(1, 'black');
+    this.context.fillStyle = linearGradient;
+    this.context.fillRect(10, 10, 130, 130);
+
+    // Border
+    this.context.lineWidth = 3;
+    this.context.strokeRect(10.5, 10.5, 130, 130);
+
+    // Circle
+    let radialGradient = this.context.createRadialGradient(40, 40, 0, 40, 40, 40);
+    radialGradient.addColorStop(0, 'white');
+    radialGradient.addColorStop(0.4, 'orange'),
+    radialGradient.addColorStop(1, 'red');
+    this.context.fillStyle = radialGradient;
+
+    this.context.beginPath();
+    this.context.arc(50, 50, 20, 0, Math.PI * 2);
+    this.context.fill();
+  }
+
+  /* Demonstrates how to create a pattern from an image
+    Try changing the 2nd option to createPattern:
+    `no-repeat`, `repeat`, `repeat-x`,`repeat-y`
+    or adding your own image source */
+  pattern(): void {
+    const img = new Image();
+    img.src = 'http://static.allbackgrounds.com/bg/red-pattern.jpg';
+    img.onload = () => {
+
+      const ptrn = this.context.createPattern(img, 'repeat');
+      this.context.fillStyle = ptrn;
+      this.context.fillRect(0, 0, 150, 150);
+
+    }
+  }
+
+  // Demonstrates the 4 properties of shadows:
+  // shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor
+  // X and Y can take neg or pos values to change position
+  shadow(): void {
+    this.context.shadowOffsetX = -5;
+    this.context.shadowOffsetY = 5;
+    this.context.shadowBlur = 2;
+    this.context.shadowColor = 'rgba(69, 69, 69, 0.5)';
+    this.context.font = '32px Lucida Console';
+    this.context.fillStyle = 'Sienna';
+    this.context.fillText('Something About A Lazy Fox.', 25, 30);
+  }
+
+  /*
+  * Demonstrates canvas fill rules:
+  * `evenodd` for alternate filling of nested circles
+  * `nonzero` for default where the entire circle will
+  * be filled solid.
+  */
+  canvasFillRules(): void {
+    this.context.beginPath();
+    this.context.arc(50, 50, 35, 0, Math.PI * 2, true);
+    this.context.arc(50, 50, 30, 0, Math.PI * 2, true);
+    this.context.arc(50, 50, 15, 0, Math.PI * 2, true);
+    this.context.moveTo(53, 54);
+    this.context.arc(53, 54, 5, 0, Math.PI * 2, true);
+
+    this.context.fillStyle = 'darkseagreen';
+    // Comment one out
+    this.context.fill('evenodd');
+    // this.context.fill('nonzero');
+
+    this.context.beginPath();
+    this.context.arc(150, 50, 35, 0, Math.PI * 2, true);
+    this.context.arc(150, 50, 30, 0, Math.PI * 2, true);
+    this.context.arc(150, 50, 15, 0, Math.PI * 2, true);
+    this.context.moveTo(53, 54);
+    this.context.arc(147, 54, 5, 0, Math.PI * 2, true);
+
+    this.context.fill('evenodd');
 
   }
+
+  // Demonstrates the 2 methods of creating text
+  // fillText() and strokeText(), comment one out to view.
+  drawText(): void {
+    this.context.font = '32px Lucida Console';
+    this.context.fillStyle = 'Sienna';
+    this.context.fillText('Something About A Lazy Fox.', 25, 30);
+    this.context.strokeText('Something About A Lazy Fox.', 25, 30);
+  }
+
+  // Demonstrates using an image in a canvas
+  // In conjunction with the lineTo drawing method
+  // Images must finish loading before calling drawImage()
+  lineGraph(): void {
+    const img = new Image();
+    img.onload = () => {
+      this.context.drawImage(img, 0, 0);
+      this.context.beginPath();
+      this.context.moveTo(30, 96);
+      this.context.lineTo(70, 66);
+      this.context.lineTo(103, 76);
+      this.context.lineTo(170, 15);
+      this.context.stroke();
+    }
+    img.src = 'https://mdn.mozillademos.org/files/5395/backdrop.png';
+  }
+
+  // Pluralsight html5
+
+  barGraph(): void  {
+    this.context.font = '30pt Arial';
+
+    this.context.save();
+    this.context.translate(200, 350);
+    this.context.rotate(-.5 * Math.PI);
+    this.context.scale(1.5, 4);
+
+    const rText = 'Rotated Text';
+    this.context.fillText(rText, 0, 0);
+    this.context.restore();
+
+    this.context.fillRect(250, 100, 200, 100);
+
+  }
+
+  blueSquares(): void {
+    const h = this.canvas.height;
+    const w = this.canvas.width;
+    const pixelData = this.context.createImageData(w, h);
+    const xCenter = w / 2;
+    const yCenter = h / 2;
+    let pixelPos = 0;
+
+
+    console.log(pixelData, pixelData.data, pixelData.data.length);
+    for (let y = 0; y < pixelData.height; y++) {
+      for(let x = 0; x < pixelData.width; x++) {
+        let xOffset = x - xCenter;
+        let yOffset = y - yCenter;
+        // delta
+        let d = Math.abs(xOffset) + Math.abs(yOffset);
+        let t = Math.tan(d / 10);
+
+        let r = t * 255;
+        let g = 125 + t * 80;
+        let b = 235 + t * 20;
+
+        pixelData.data[pixelPos++] = Math.max(0, Math.min(255, r));
+        pixelData.data[pixelPos++] = Math.max(0, Math.min(255, g));
+        pixelData.data[pixelPos++] = Math.max(0, Math.min(255, b));
+        pixelData.data[pixelPos++] = Math.random() * 1000;
+
+
+      }
+    }
+
+    this.context.putImageData(pixelData, 0, 0);
+  }
+
+  pixels(): void {
+    const h = this.canvas.height;
+    const w = this.canvas.width;
+    
+    const img = new Image();
+    img.onload = () => {
+      console.log('loaded');
+      this.context.drawImage(img, w / 2 - img.width / 4,
+                              h / 2 - img.height / 4, 206, 206);
+      this.grayScale(w, h);
+    };
+    img.src = '/assets/pictures/doctorcat.jpg';
+    console.log(img);
+  }
+
+  grayScale(w, h): void {
+    let pixelData = this.context.getImageData(0, 0, w, h);
+    let data = pixelData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      let gray = data[i] * .3 + data[i + 1] * .59 + data[i + 2] * .11;
+
+      data[i] = gray;
+      data[i + 1] = gray;
+      data[i + 2] = gray;
+    }
+    this.context.putImageData(pixelData, 0, 0);
+  }
+
+
 }
 
